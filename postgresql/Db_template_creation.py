@@ -27,7 +27,6 @@ def main():
 	print("\nThe script is launched with these config:" + str(params) )
 	#### Connect to database as SuperUser
 	ppwd = getpass.getpass("\nPlease enter the password of '%s' to connect as superuser> " % params["user"])
-	ppwd = "gregtest"	
 	dbconn = None
 	cur = None
         try:
