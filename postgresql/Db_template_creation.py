@@ -3,6 +3,8 @@ import psycopg2
 import argparse
 import getpass
 import sys
+import string
+import random
 
 def get_params():
 	parser = argparse.ArgumentParser()
@@ -21,6 +23,12 @@ def get_params():
 	params["readonly"] = not args.noReadOnly
 	return params
 
+def gen_pwd(size):
+	l = string.ascii_letters + string.digits + ':;-_,'
+	p = ''
+	for i in range(size):
+		p += random.choice(l)
+	return p
 
 def main():
 	params = get_params()
@@ -40,7 +48,7 @@ def main():
 		dbconn.set_isolation_level(0)
 
 	#### As SuperUser, create new role and new database
-		upwd = getpass.getpass("\nCreating new role '%s', please enter its password> " %params["dbname"] )
+		upwd = gen_pwd(8) #getpass.getpass("\nCreating new role '%s', please enter its password> " %params["dbname"] )
 
 		cur = dbconn.cursor()
 		step = "Creating and altering new role"
@@ -48,6 +56,7 @@ def main():
 		createUser2 = "alter role %s CREATEROLE" % params["dbname"]
 		cur.execute(createUser1)
 		cur.execute(createUser2)
+		print("New user '%s' created successfully, password='%s'" % (params["dbname"],upwd))
 		step = "Creating database"
 		createDb = "create database %s with owner = %s" % (params["dbname"],params["dbname"])
 		cur.execute(createDb)
@@ -86,7 +95,7 @@ def main():
 	#### As SuperUser, create optional read-only user
 		if params["readonly"]:
 			ro = params["dbname"] + "_ro"
-			ropwd =  getpass.getpass("Creating new read-only role '%s', please enter its password> " % ro)
+			ropwd = gen_pwd(8)  #getpass.getpass("Creating new read-only role '%s', please enter its password> " % ro)
 
 			createRo1 = "create role %s with login password '%s'" %(ro, ropwd)
 			step = "Create read-only role"
@@ -99,6 +108,7 @@ def main():
 			cur.execute(grantRo1)
 			cur.execute(grantRo2)
 			cur.execute(grantRo3)
+			print("New read-only user '%s' created successfully, password='%s'" % (ro,ropwd))
 	except Exception, msg:
 		print("Error during the execution of step %s, with error: %s" % (step, msg))
 		print("\nPlease check privileges and role setting")
@@ -114,6 +124,5 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
 
 
