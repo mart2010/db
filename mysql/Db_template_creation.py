@@ -6,13 +6,19 @@ import argparse
 import getpass
 import sys
 
+# IP-range for limiting access from inside BBP to all users created
+# "128.178.187.%" (epfl and not geneva), "128.178.167.%", "10.80.0.%", "10.80.64.%", CSCS ranges: "148.187.76.%", "148.187.84.%", "148.187.85.%" 
+# This is changed to firewall rule, so no longer restrict the access
+ipranges =  () 
+
+
 def get_params():
 	parser = argparse.ArgumentParser()
-	parser.add_argument("dbname", help="Define the name of new database to be created.  A new user having same name will also be created")
+	parser.add_argument("dbname", help="Define the name of new database and the new user")
 	parser.add_argument("-ho", "--host", default="bbpdbsrv05.epfl.ch", help="Default host: bbpdbsrv05.epfl.ch")
 	parser.add_argument("-p", "--port", default="3306", help="Default port: 3306" )
-	parser.add_argument("-u", "--user", default="mysql", help="This is used for connecting to database (need superuser privileges), default= mysql")
-	parser.add_argument("--noReadOnly", action="store_true", default=False, help="Use this flag to avoid creating a readonly user")
+	parser.add_argument("-u", "--user", default="root", help="Used for connecting to database as superuser, default=root")
+	parser.add_argument("--noReadOnly", action="store_true", default=False, help="Flag used to avoid creating a readonly user")
 	
 	args = parser.parse_args()
 	params = {}
@@ -48,8 +54,9 @@ def main():
 		step = "Creating user"
 		createUser1 = "create user '%s'@'%%' identified by '%s'" %(params["dbname"],upwd)
 		cur.execute(createUser1)
+		print("User %s created successfully!" % params["dbname"])
 		step = "Creating database"
-		createDb = "create database %s" % (params["dbname"]) #?should I add: character set UTF8
+		createDb = "create database %s" % (params["dbname"]) #DB has default encoding='UTF8' 
 		cur.execute(createDb)
 	except Exception, msg:
 		print("\nError during the execution of step '%s', error: %s" % (step, msg))
@@ -74,23 +81,27 @@ def main():
                                 passwd=ppwd)
 		dbconn.autocommit(True)
 		cur = dbconn.cursor()
-
-		grant1 = "grant all privileges on %s.* to '%s'@'%%'" %(params["dbname"], params["dbname"])
+		# grant access from all valid IP-ranges
 		step = "Grant privilege to %s" % params["dbname"]
-		cur.execute(grant1)
-		
+		for ip in ipranges:
+			grant1 = "grant all privileges on %s.* to '%s'@'%s' identified by '%s'"\
+					%(params["dbname"], params["dbname"],ip,upwd)
+			cur.execute(grant1)
+
+		print("Grant privileges to user %s successfully!" % params["dbname"]) 
+
 		if params["readonly"]:
 			userro = params["dbname"] + "_ro"
 			upwd = getpass.getpass("\nCreating read-only user '%s', please enter its password> " % userro )
 			step = "Creating read-only user"
 			createUserRo = "create user '%s'@'%%' identified by '%s'" %(userro,upwd)
 			cur.execute(createUserRo)
-			
-			grantRo = "grant select, show view on %s.* to '%s'@'%%'" %(params["dbname"], userro)
+			print("Readonly User %s created successfully!" % params["dbname"])	
 			step = "Grant read-only privilege to %s" % userro
-			cur.execute(grantRo)
-			
-
+			for ip in ipranges:
+				grantRo = "grant select, show view on %s.* to '%s'@'%s'" %(params["dbname"], userro, ip )
+				cur.execute(grantRo)
+			print("Grant privileges to readonly user %s successfully!" % params["dbname"]) 
 	except Exception, msg:
 		print("Error during the execution of step %s, with error: %s" % (step, msg))
 		print("\nPlease check privileges and role setting")
