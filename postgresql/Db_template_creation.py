@@ -24,7 +24,7 @@ def get_params():
 	return params
 
 def gen_pwd(size):
-	l = string.ascii_letters + string.digits + ':;-_,'
+	l = string.ascii_letters + string.digits 
 	p = ''
 	for i in range(size):
 		p += random.choice(l)
