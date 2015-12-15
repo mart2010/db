@@ -6,8 +6,6 @@ import argparse
 import getpass
 import sys
 
-# IP-range for limiting access from inside BBP to all users created
-# "128.178.187.%" (epfl and not geneva), "128.178.167.%", "10.80.0.%", "10.80.64.%", CSCS ranges: "148.187.76.%", "148.187.84.%", "148.187.85.%" 
 # This is changed to firewall rule, so no longer restrict the access
 ipranges =  () 
 
@@ -15,7 +13,7 @@ ipranges =  ()
 def get_params():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("dbname", help="Define the name of new database and the new user")
-	parser.add_argument("-ho", "--host", default="bbpdbsrv05.epfl.ch", help="Default host: bbpdbsrv05.epfl.ch")
+	parser.add_argument("-ho", "--host", default="localhost", help="Default host: localhost")
 	parser.add_argument("-p", "--port", default="3306", help="Default port: 3306" )
 	parser.add_argument("-u", "--user", default="root", help="Used for connecting to database as superuser, default=root")
 	parser.add_argument("--noReadOnly", action="store_true", default=False, help="Flag used to avoid creating a readonly user")

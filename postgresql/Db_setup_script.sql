@@ -1,7 +1,7 @@
 
 --Add the read-only user to view pg_config
 
-CREATE ROLE info_ro WITH LOGIN PASSWORD 'ir:;2222_ro';
+CREATE ROLE info_ro WITH LOGIN PASSWORD '*********';
 
 GRANT SELECT ON PG_SETTINGS TO info_ro;
 
