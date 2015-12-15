@@ -9,7 +9,7 @@ import random
 def get_params():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("dbname", help="Define the name of new database to be created.  A new role (i.e. owner) is also created with same name")
-	parser.add_argument("-ho", "--host", default="bbpdbsrv03.epfl.ch", help="Default host: bbpdbsrv03.epfl.ch")
+	parser.add_argument("-ho", "--host", default="localhost", help="Default host: localhost")
 	parser.add_argument("-p", "--port", default="5432", help="5432" )
 	parser.add_argument("-u", "--user", default="postgres", help="This is used for connecting to database (need superuser privileges), default= postgres")
 	parser.add_argument("--noReadOnly", action="store_true", default=False, help="Use this flag to avoid creating a readonly user")
